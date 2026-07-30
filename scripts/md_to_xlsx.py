@@ -1,14 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-md_to_xlsx.py 鈥?灏?Markdown 娴嬭瘯鐢ㄤ緥琛ㄨ浆鎹负 Excel(.xlsx) 鎴?CSV銆?
-鐢ㄦ硶:
+md_to_xlsx.py — 将 Markdown 测试用例表转换为 Excel(.xlsx) 或 CSV。
+
+用法:
     python md_to_xlsx.py <input.md> [--out output.xlsx] [--csv]
 
-璇存槑:
-    - 鎸?'## ' 浜岀骇鏍囬鍒囧垎绔犺妭锛屾瘡涓珷鑺傜殑琛ㄦ牸鍐欏叆涓€涓?sheet
-      (openpyxl 鍙敤鏃? 鎴栦竴涓嫭绔?CSV锛?-csv 鎴?openpyxl 缂哄け鏃讹級銆?    - 鍚屼竴绔犺妭鍑虹幇澶氬紶琛ㄦ椂锛氳〃澶寸浉鍚屽垯鍚堝苟鏁版嵁琛岋紱琛ㄥご涓嶅悓鍒欎互
-      绌鸿 + 鏂拌〃澶撮『搴忚拷鍔犮€?    - 鍗曞厓鏍间腑鐨?<br> / <br/> / <br /> 浼氳浆鎹负 Excel 鍗曞厓鏍煎唴鎹㈣锛?      鏁版嵁琛岃嚜鍔ㄥ紑鍚嚜鍔ㄦ崲琛屼笌椤剁瀵归綈銆?    - 闆朵緷璧栦篃鍙伐浣滐紙鑷姩鍥為€€鍒?CSV锛夛紱瀹夎 openpyxl 鍙幏寰楃湡姝ｇ殑 .xlsx銆?      pip install openpyxl
+说明:
+    - 按 '## ' 二级标题切分章节，每个章节的表格写入一个 sheet
+      (openpyxl 可用时) 或一个独立 CSV（--csv 或 openpyxl 缺失时）。
+    - 同一章节出现多张表时：表头相同则合并数据行；表头不同则以
+      空行 + 新表头顺序追加。
+    - 单元格中的 <br> / <br/> / <br /> 会转换为 Excel 单元格内换行，
+      数据行自动开启自动换行与顶端对齐。
+    - 零依赖也可工作（自动回退到 CSV）；安装 openpyxl 可获得真正的 .xlsx。
+      pip install openpyxl
 """
 import argparse
 import csv
@@ -23,9 +29,9 @@ BAD_NAME = re.compile(r"[:?*\[\]/\\]")
 
 
 def split_sections(lines):
-    """鎸?'## ' 鏍囬鍒囧垎锛岃繑鍥?[(鏍囬, 琛屽垪琛?, ...]"""
+    """按 '## ' 标题切分，返回 [(标题, 行列表), ...]"""
     sections = []
-    current_title = "鐢ㄤ緥"
+    current_title = "用例"
     current_lines = []
     for line in lines:
         m = re.match(r"^##\s+(.*)$", line)
@@ -42,7 +48,8 @@ def split_sections(lines):
 
 
 def parse_tables(block_lines):
-    """瑙ｆ瀽涓€缁勮涓殑鎵€鏈?Markdown 琛ㄦ牸锛岃繑鍥?[(header, rows), ...]銆?    琛ㄦ牸涔嬮棿浠ラ潪琛ㄦ牸琛岋紙绌鸿銆佽鏄庢枃瀛楃瓑锛夊垎闅斻€?""
+    """解析一组行中的所有 Markdown 表格，返回 [(header, rows), ...]。
+    表格之间以非表格行（空行、说明文字等）分隔。"""
     tables = []
     cur = []
 
@@ -68,12 +75,12 @@ def is_sep_row(row):
 
 
 def clean_cell(text):
-    """鍗曞厓鏍兼竻娲楋細<br> 绯诲垪鏍囩杞崲涓烘崲琛岀銆?""
+    """单元格清洗：<br> 系列标签转换为换行符。"""
     return BR.sub("\n", text.strip())
 
 
 def safe_sheet(name, taken):
-    """Excel sheet 鍚嶉檺鍒讹細鈮?1 瀛楃锛岀鐢?[:?*/\\]锛涢噸鍚嶆椂鑷姩杩藉姞搴忓彿銆?""
+    """Excel sheet 名限制：≤31 字符，禁用 [:?*/\\]；重名时自动追加序号。"""
     base = BAD_NAME.sub("_", name).strip() or "Sheet"
     base = base[:31]
     candidate, i = base, 2
@@ -101,8 +108,8 @@ def to_xlsx(sections, out_path):
         from openpyxl.styles import Alignment, Font, PatternFill
         from openpyxl.utils import get_column_letter
     except ImportError:
-        print("[warn] 鏈娴嬪埌 openpyxl锛岃嚜鍔ㄥ洖閫€涓?CSV 杈撳嚭銆?)
-        print("       瀹夎: pip install openpyxl  浠ヨ幏寰楃湡姝ｇ殑 .xlsx銆?)
+        print("[warn] 未检测到 openpyxl，自动回退为 CSV 输出。")
+        print("       安装: pip install openpyxl  以获得真正的 .xlsx。")
         base = os.path.splitext(out_path)[0]
         to_csv_fallback(sections, base)
         return
@@ -126,7 +133,8 @@ def to_xlsx(sections, out_path):
             max_cols = max(max_cols, len(header))
             same = header == prev_header
             if prev_header is not None and not same:
-                ws.append([])  # 涓嶅悓琛ㄥご涔嬮棿绌轰竴琛?            if not same:
+                ws.append([])  # 不同表头之间空一行
+            if not same:
                 ws.append(header)
                 for c in ws[ws.max_row]:
                     c.fill = header_fill
@@ -137,7 +145,7 @@ def to_xlsx(sections, out_path):
                 for c in ws[ws.max_row]:
                     c.alignment = data_align
             prev_header = header
-        # 鍒楀鑷€傚簲锛堜腑鏂囨寜 2 璁★紝澶氳鍗曞厓鏍兼寜鏈€闀夸竴琛屼及绠楋級
+        # 列宽自适应（中文按 2 计，多行单元格按最长一行估算）
         for col_idx in range(1, max_cols + 1):
             char_w = 0
             for row in ws.iter_rows(min_col=col_idx, max_col=col_idx):
@@ -154,10 +162,10 @@ def to_xlsx(sections, out_path):
         ws.freeze_panes = "A2"
 
     if not wb.sheetnames:
-        print("[warn] 鏈В鏋愬埌浠讳綍 Markdown 琛ㄦ牸锛屾湭鐢熸垚鏂囦欢銆?)
+        print("[warn] 未解析到任何 Markdown 表格，未生成文件。")
         sys.exit(1)
     wb.save(out_path)
-    print(f"[ok] 宸茬敓鎴?Excel: {out_path}  (sheet 鏁? {len(wb.sheetnames)})")
+    print(f"[ok] 已生成 Excel: {out_path}  (sheet 数: {len(wb.sheetnames)})")
 
 
 def to_csv_fallback(sections, base):
@@ -179,22 +187,22 @@ def to_csv_fallback(sections, base):
                 for r in body:
                     w.writerow(pad_row(r, len(header)))
                 prev_header = header
-        print(f"[ok] 宸茬敓鎴?CSV: {fname}")
+        print(f"[ok] 已生成 CSV: {fname}")
         made += 1
     if made == 0:
-        print("[warn] 鏈В鏋愬埌浠讳綍 Markdown 琛ㄦ牸銆?)
+        print("[warn] 未解析到任何 Markdown 表格。")
         sys.exit(1)
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Markdown 鐢ㄤ緥琛?鈫?Excel/CSV")
-    ap.add_argument("input", help="杈撳叆鐨?Markdown 鏂囦欢")
-    ap.add_argument("--out", default=None, help="杈撳嚭 .xlsx 璺緞")
-    ap.add_argument("--csv", action="store_true", help="寮哄埗杈撳嚭 CSV")
+    ap = argparse.ArgumentParser(description="Markdown 用例表 → Excel/CSV")
+    ap.add_argument("input", help="输入的 Markdown 文件")
+    ap.add_argument("--out", default=None, help="输出 .xlsx 路径")
+    ap.add_argument("--csv", action="store_true", help="强制输出 CSV")
     args = ap.parse_args()
 
     if not os.path.exists(args.input):
-        print(f"[error] 鏂囦欢涓嶅瓨鍦? {args.input}")
+        print(f"[error] 文件不存在: {args.input}")
         sys.exit(1)
 
     with open(args.input, encoding="utf-8") as f:
