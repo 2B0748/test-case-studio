@@ -6,7 +6,7 @@
   <img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="MIT License">
 </p>
 
-<h1 align="center">🧪 测试用例工作室（Test Case Studio）</h1>
+<h1 align="center">🧪 测试用例设计评审工作室（Test Case Studio）</h1>
 
 <p align="center">
   <strong>需求 → 测试点 → 用例 → 评审 · 一站式测试用例设计提示词工程</strong>
