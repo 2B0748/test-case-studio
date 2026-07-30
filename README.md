@@ -1,5 +1,6 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/%E7%B1%BB%E5%9E%8B-Claude%20Code%20Skill-blue?style=for-the-badge" alt="Claude Code Skill">
+  <img src="https://img.shields.io/badge/%E7%B1%BB%E5%9E%8B-AI%20Agent%20%E9%80%9A%E7%94%A8-blue?style=for-the-badge" alt="AI Agent 通用">
+  <img src="https://img.shields.io/badge/%E9%80%82%E7%94%A8-ChatGPT%20%7C%20Claude%20%7C%20Gemini%20%7C%20%E9%80%9A%E7%94%A8%E5%A4%A7%E6%A8%A1%E5%9E%8B-orange?style=for-the-badge" alt="ChatGPT | Claude | Gemini">
   <img src="https://img.shields.io/badge/%E9%A2%86%E5%9F%9F-%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95-green?style=for-the-badge" alt="软件测试">
   <img src="https://img.shields.io/badge/%E8%AF%AD%E8%A8%80-%E4%B8%AD%E6%96%87-red?style=for-the-badge" alt="中文">
   <img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="MIT License">
@@ -8,11 +9,12 @@
 <h1 align="center">🧪 测试用例工作室（Test Case Studio）</h1>
 
 <p align="center">
-  <strong>需求 → 测试点 → 用例 → 评审 · 一站式测试用例设计 Skill</strong>
+  <strong>需求 → 测试点 → 用例 → 评审 · 一站式测试用例设计提示词工程</strong>
 </p>
 
 <p align="center">
   面向软件测试工程师的 <b>AI 驱动</b>测试用例设计工具<br>
+  一套提示词，<b>适用所有大模型</b>：ChatGPT · Claude · Gemini · DeepSeek · 通义千问 · 文心一言 ……<br>
   覆盖 <b>功能 · 接口(API) · 性能 · 安全 · 兼容性</b> 全类型<br>
   支持 <b>Markdown + Excel</b> 双格式输出，可直接导入禅道 / TestRail / Jira
 </p>
@@ -21,9 +23,13 @@
 
 ## 📖 这是什么？
 
-**测试用例工作室** 是一个 [Claude Code](https://claude.ai/code) 的 Skill 插件，把软件测试中"需求理解 → 测试点拆解 → 用例设计编写 → 用例评审"四个环节串成**标准化的 AI 工作流**。
+**测试用例工作室** 是一套**通用 AI 提示词工程（Prompt Engineering）**，把软件测试中"需求理解 → 测试点拆解 → 用例设计编写 → 用例评审"四个环节串成**标准化的 AI 工作流**。
 
-你只需要提供 PRD、需求文档、接口文档或用户故事，Skill 就会自动按专业方法轮产出测试点清单、完整用例表和评审报告——不再从零手写，不再遗漏边界场景。
+不同于绑定特定平台的插件——本项目的核心是一份完整、自洽的**系统指令（SKILL.md）**和配套的**独立提示词模板（prompts.md）**。无论你用的是 ChatGPT、Claude、Gemini、DeepSeek、通义千问还是文心一言，把对应提示词粘贴进去，AI 就会按专业方法论产出测试点清单、完整用例表和评审报告。
+
+**不再从零手写，不再遗漏边界场景。一次设计，处处可用。**
+
+> 💡 如果你使用 Claude Code，本项目也兼容其 Skill 机制，安装后可直接在对话中触发。
 
 ---
 
@@ -61,45 +67,51 @@ test-case-studio/
 
 ## 🚀 快速开始
 
-### 前置要求
+### 方式一：直接使用（30 秒上手）
 
-- 安装 [Claude Code](https://docs.anthropic.com/zh-CN/docs/claude-code/overview)（VS Code / JetBrains 插件或 CLI）
-- （可选）Python 3 + openpyxl，用于 Excel 导出：`pip install openpyxl`
+**适用于所有 AI 工具**（ChatGPT、Claude、Gemini、DeepSeek、通义千问……）
 
-### 安装 Skill
+1. 打开 [SKILL.md](SKILL.md)，复制全部内容
+2. 粘贴到任意 AI 对话中作为**系统指令 / 第一条消息**
+3. 接着发送你的需求文档、接口文档或用户故事即可
 
-**方式一：下载安装**
+或者按阶段使用独立提示词——打开 [references/prompts.md](references/prompts.md)，选择对应阶段的提示词模板单独使用。
+
+### 方式二：Claude Code Skill 安装
 
 ```bash
-# 1. 克隆本仓库到 Claude Code 的 skills 目录
-git clone https://github.com/<your-username>/test-case-studio.git ~/.claude/skills/test-case-studio
+git clone https://github.com/2B0748/test-case-studio.git ~/.claude/skills/test-case-studio
 ```
 
-**方式二：手动安装**
-
-将本项目文件夹放入 Claude Code 的 skills 目录，或通过 VS Code 插件设置中指定 Skill 路径。
-
-### 使用方式
-
-在 Claude Code 对话中直接触发：
+安装后可在 Claude Code 对话中直接触发：
 
 ```
 帮我把这份 PRD 拆成测试点
-```
-
-```
 根据接口文档写一份完整的 API 测试用例
-```
-
-```
 评审这份用例的覆盖度
 ```
 
+### 可选依赖
+
+- Python 3 + openpyxl，用于 Markdown → Excel 导出：`pip install openpyxl`
+
+---
+
+## 💬 使用示例
+
+在任何 AI 工具的对话框中：
+
 ```
-帮我检查登录模块的安全测试是否充分
+【系统指令：粘贴 SKILL.md 全部内容】
+
+以下是一份用户登录模块的 PRD：
+
+[粘贴你的需求文档……]
+
+请帮我产出完整的测试用例。
 ```
 
-Skill 会自动识别意图并进入对应的执行阶段。
+AI 就会按照四阶段工作流，自动拆解测试点 → 选择设计方法 → 生成标准用例 → 给出评审报告。
 
 ---
 
@@ -206,5 +218,5 @@ MIT License — 自由使用、修改和分发。
 ---
 
 <p align="center">
-  <sub>Built with ❤️ for QA Engineers | Powered by Claude Code</sub>
+  <sub>Built with ❤️ for QA Engineers | 一套提示词 · 适用所有大模型</sub>
 </p>
